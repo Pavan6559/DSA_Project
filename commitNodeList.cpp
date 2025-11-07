@@ -14,9 +14,7 @@ using namespace std;
     #include <unistd.h>
 #endif
 
-// ======================================================
 //  GLOBAL HELPER FUNCTIONS (used for commit ID + timestamp)
-// ======================================================
 
 string gen_random(const int len)
 {
@@ -33,4 +31,16 @@ string gen_random(const int len)
         tmp += alphanum[rand() % (sizeof(alphanum) - 1)];
 
     return tmp;
+}
+
+string get_time()
+{
+    time_t t = std::time(0);
+    tm* now = std::localtime(&t);
+
+    return to_string(now->tm_year + 1900) + "/" +
+           to_string(now->tm_mon + 1) + "/" +
+           to_string(now->tm_mday) + " " +
+           to_string(now->tm_hour) + ":" +
+           to_string(now->tm_min) + "\n";
 }
