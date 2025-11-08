@@ -84,7 +84,10 @@ public:
 
     void writeNextCommitID(string id)
     {
-
+        nextCommitID = id;
+        auto path = filesystem::current_path() / ".git" / "commits" / commitID / "nextCommitInfo.txt";
+        ofstream write(path.string());
+        write << id;
     }
 
     string checkNextCommitId()
