@@ -56,7 +56,18 @@ private:
 
     void createCommitNode()
     {
+        filesystem::create_directories(filesystem::current_path() / ".git" / "commits" / commitID);
+        auto infoPath = filesystem::current_path() / ".git" / "commits" / commitID / "commitInfo.txt";
 
+        ofstream write(infoPath.string());
+        write << "1." + commitID << "\n"
+              << "2." + commitMsg << "\n"
+              << "3." + get_time();
+
+        auto staging = filesystem::current_path() / ".git" / "staging_area";
+        filesystem::copy(staging,
+                         filesystem::current_path() / ".git" / "commits" / commitID / "Data",
+                         filesystem::copy_options::update_existing | filesystem::copy_options::recursive);
     }
 
 public:
