@@ -44,3 +44,45 @@ string get_time()
            to_string(now->tm_hour) + ":" +
            to_string(now->tm_min) + "\n";
 }
+
+
+//  INTERNAL CLASS (PRIVATE TO THIS .CPP FILE)
+class commitNode
+{
+private:
+    string commitID;
+    string commitMsg;
+    string nextCommitID;
+
+    void createCommitNode()
+    {
+
+    }
+
+public:
+    commitNode() {}
+
+    commitNode(string id, string msg)
+        : commitID(id), commitMsg(msg)
+    {
+        createCommitNode();
+    }
+
+    string getCommitID() { return commitID; }
+    string getCommitMsg() { return commitMsg; }
+
+    void writeNextCommitID(string id)
+    {
+
+    }
+
+    string checkNextCommitId()
+    {
+
+    }
+
+    void revertCommitNode(string fromHash)
+    {
+
+    }
+};
