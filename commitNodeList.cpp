@@ -86,3 +86,5 @@ public:
 
     }
 };
+
+//  commitNodeList CLASS IMPLEMENTATION (matches .h file)
