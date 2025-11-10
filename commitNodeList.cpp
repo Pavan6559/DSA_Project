@@ -102,3 +102,69 @@ public:
 };
 
 //  commitNodeList CLASS IMPLEMENTATION (matches .h file)
+
+commitNodeList::commitNodeList()
+{
+    // nothing to do here but required by linker
+}
+
+void commitNodeList::addOnTail(string msg)
+{
+    string commitID = gen_random(8);
+    commitNode node(commitID, msg);
+}
+
+void commitNodeList::revertCommit(string commitHash)
+{
+    // get original commit info
+    auto infoFile = filesystem::current_path() / ".git" / "commits" / commitHash / "commitInfo.txt";
+    if (!filesystem::exists(infoFile)) {
+        cout << "Invalid commit hash!\n";
+        return;
+    }
+
+    string msg;
+    string line;
+    ifstream file(infoFile.string());
+    while (getline(file, line))
+        if (line[0] == '2')   // commit message line
+            msg = line.substr(2);
+
+    commitNode node(gen_random(8), msg);  // <-- use original commit message
+    node.revertCommitNode(commitHash);
+}
+
+
+void commitNodeList::printCommitList()
+{
+    cout << "\n===== COMMIT LOG =====\n";
+
+    auto commitDir = filesystem::current_path() / ".git" / "commits";
+
+    if (!filesystem::exists(commitDir))
+    {
+        cout << "No commits yet.\n";
+        return;
+    }
+
+    for (const auto& dir : filesystem::directory_iterator(commitDir))
+    {
+        auto infoFile = dir.path() / "commitInfo.txt";
+        if (!filesystem::exists(infoFile)) continue;
+
+        ifstream file(infoFile.string());
+        string info;
+
+        while (getline(file, info))
+        {
+            if (info[0] == '1')
+                cout << "Commit ID:   " << info.substr(2) << endl;
+            if (info[0] == '2')
+                cout << "Message:     " << info.substr(2) << endl;
+            if (info[0] == '3')
+                cout << "Date & Time: " << info.substr(2) << endl;
+        }
+
+        cout << "--------------------------\n";
+    }
+}
