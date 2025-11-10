@@ -102,7 +102,16 @@ public:
 
     void revertCommitNode(string fromHash)
     {
+        filesystem::create_directories(
+            filesystem::current_path() / ".git" / "commits" / commitID / "Data"
+        );
 
+        filesystem::copy(
+            filesystem::current_path() / ".git" / "commits" / fromHash / "Data",
+            filesystem::current_path() / ".git" / "commits" / commitID / "Data",
+            filesystem::copy_options::recursive |
+            filesystem::copy_options::overwrite_existing   // <-- THIS FIXES IT
+        );
     }
 };
 
