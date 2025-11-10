@@ -92,7 +92,12 @@ public:
 
     string checkNextCommitId()
     {
+        auto path = filesystem::current_path() / ".git" / "commits" / commitID / "nextCommitInfo.txt";
+        if (!filesystem::exists(path)) return "";
 
+        ifstream file(path.string());
+        getline(file, nextCommitID);
+        return nextCommitID;
     }
 
     void revertCommitNode(string fromHash)
