@@ -13,3 +13,7 @@ using namespace std;
 #define WHT  "\x1B[37m"
 #define END  "\033[0m"
 //---------------------
+
+int main(){
+  
+}
