@@ -124,8 +124,40 @@ commitNodeList::commitNodeList()
 
 void commitNodeList::addOnTail(string msg)
 {
-    string commitID = gen_random(8);
-    commitNode node(commitID, msg);
+    // parent = current branch head
+    string parent = get_current_branch_head_hash();
+    string timestamp = get_time_str();
+    string fullHash = compute_commit_hash(parent, msg, timestamp); // 40-char hex
+    string shortHash = fullHash.substr(0, 8);
+
+    // create commit dir named with shortHash (for readability), but store full hash in commitInfo
+    fs::path commitPath = fs::current_path() / ".git" / "commits" / shortHash;
+    fs::create_directories(commitPath);
+
+    // write commitInfo.txt (store full hash in line 1 to be unambiguous)
+    ofstream info(commitPath / "commitInfo.txt");
+    info << "1." << fullHash << "\n";
+    info << "2." << msg << "\n";
+    info << "3." << timestamp << "\n";
+    info.close();
+
+    // copy staging_area -> commit/Data (overwrite if exists)
+    fs::path staging = fs::current_path() / ".git" / "staging_area";
+    fs::create_directories(commitPath / "Data");
+    fs::copy(staging, commitPath / "Data", fs::copy_options::recursive | fs::copy_options::overwrite_existing);
+
+    // update branch ref: HEAD -> refs/heads/<branch>
+    string headRef = get_HEAD_ref();
+    if (!headRef.empty()) {
+        set_ref_value(headRef, fullHash);
+    } else {
+        // no HEAD? set to refs/heads/main
+        set_ref_value("refs/heads/main", fullHash);
+        ofstream head(fs::current_path() / ".git" / "HEAD");
+        head << "ref: refs/heads/main";
+    }
+
+    cout << "Committed: " << shortHash << endl;
 }
 
 void commitNodeList::revertCommit(string commitHash)
