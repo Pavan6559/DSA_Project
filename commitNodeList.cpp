@@ -221,6 +221,13 @@ void commitNodeList::revertCommit(string commitHash)
     }
 
     string msg;
+    {
+        ifstream fin(fs::current_path() / ".git" / "commits" / foundDirName / "commitInfo.txt");
+        string ln;
+        while (getline(fin, ln)) {
+            if (ln.size() > 0 && ln[0] == '2') { msg = ln.substr(2); break; }
+        }
+    }
     string line;
     ifstream file(infoFile.string());
     while (getline(file, line))
