@@ -119,7 +119,7 @@ public:
 
 commitNodeList::commitNodeList()
 {
-    // nothing to do here but required by linker
+    // nothing to do here, but required by the linker
 }
 
 void commitNodeList::addOnTail(string msg)
