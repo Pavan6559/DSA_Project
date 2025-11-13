@@ -212,5 +212,9 @@ void commitNodeList::printCommitList()
         }
 
         cout << "--------------------------\n";
+        cout << "Commit:    " << shortHash << endl;
+        cout << "Message:   " << msg << endl;
+        cout << "Timestamp: " << timestamp << endl;
+        cout << "-----------------------------\n";
     }
 }
