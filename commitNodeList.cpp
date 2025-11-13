@@ -162,6 +162,38 @@ void commitNodeList::addOnTail(string msg)
 
 void commitNodeList::revertCommit(string commitHash)
 {
+    string targetFullHash;
+    if (commitHash == "HEAD") {
+        string cur = get_current_branch_head_hash();
+        if (cur.empty()) {
+            cout << "No HEAD to revert to\n";
+            return;
+        }
+        targetFullHash = cur;
+    } else {
+        // search commits folder for matching full or short hash
+        fs::path commitDir = fs::current_path() / ".git" / "commits";
+        bool found = false;
+        for (auto &d : fs::directory_iterator(commitDir)) {
+            fs::path infoFile = d.path() / "commitInfo.txt";
+            if (!fs::exists(infoFile)) continue;
+            string line; ifstream f(infoFile.string());
+            getline(f, line);
+            if (line.size() > 2) {
+                string full = line.substr(2);
+                string shortH = full.substr(0, 8);
+                if (commitHash == full || commitHash == shortH || commitHash == d.path().filename().string()) {
+                    targetFullHash = full;
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            cout << "Commit not found: " << commitHash << "\n";
+            return;
+        }
+    }
     // get original commit info
     auto infoFile = filesystem::current_path() / ".git" / "commits" / commitHash / "commitInfo.txt";
     if (!filesystem::exists(infoFile)) {
