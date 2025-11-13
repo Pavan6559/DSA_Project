@@ -236,6 +236,37 @@ void commitNodeList::revertCommit(string commitHash)
 
     commitNode node(gen_random(8), msg);  // <-- use original commit message
     node.revertCommitNode(commitHash);
+     string parent = get_current_branch_head_hash();
+    string timestamp = get_time_str();
+    // compute new commit hash using targetFullHash content to ensure determinism
+    // We'll include special marker "revert:"+targetFullHash in the message so it's recorded
+    string combinedMsg = string("revert:") + targetFullHash + "|" + msg;
+    // For revert, we need to compute a hash based on the files we're copying (the target Data)
+    // To keep deterministic, we temporarily copy the target Data into the staging area and compute
+    fs::path staging = fs::current_path() / ".git" / "staging_area";
+    // clear staging
+    if (fs::exists(staging)) fs::remove_all(staging);
+    fs::create_directories(staging);
+    // copy target Data into staging
+    fs::copy(fs::current_path() / ".git" / "commits" / foundDirName / "Data", staging, fs::copy_options::recursive | fs::copy_options::overwrite_existing);
+
+    string fullHash = compute_commit_hash(parent, combinedMsg, timestamp);
+    string shortHash = fullHash.substr(0, 8);
+    fs::path newCommitPath = fs::current_path() / ".git" / "commits" / shortHash;
+    fs::create_directories(newCommitPath);
+    ofstream info(newCommitPath / "commitInfo.txt");
+    info << "1." << fullHash << "\n";
+    info << "2." << msg << "\n";
+    info << "3." << timestamp << "\n";
+    info << "4." << parent      << "\n"; 
+    info.close();
+    // copy staging -> new commit Data (already in staging)
+    fs::copy(staging, newCommitPath / "Data", fs::copy_options::recursive | fs::copy_options::overwrite_existing);
+
+    // update current branch ref to this new commit
+    string headRef = get_HEAD_ref();
+    if (!headRef.empty()) set_ref_value(headRef, fullHash);
+    cout << "Reverted: " << shortHash << endl;
 }
 
 
