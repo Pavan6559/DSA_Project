@@ -97,6 +97,95 @@ void gitClass::gitLog()
     list.printCommitList();
 }
 
+
+// new functions: branch, checkout, current
+
+void gitClass::gitBranch(string branchName) {
+    // create refs/heads/<branchName> pointing to current head (or empty)
+    string headRef = get_HEAD_ref_local();
+    string curHash;
+    if (!headRef.empty()) curHash = get_ref_value_local(headRef);
+    string newRef = string("refs/heads/") + branchName;
+    set_ref_value_local(newRef, curHash);
+    cout << "Branch created: " << branchName << "\n";
+}
+
+void gitClass::gitCheckout(string branchName) {
+    string ref = string("refs/heads/") + branchName;
+    fs::path refPath = fs::current_path() / ".git" / ref;
+    if (!fs::exists(refPath)) {
+        cout << "Branch does not exist: " << branchName << "\n";
+        return;
+    }
+    write_HEAD_ref(ref);
+    cout << "Switched to branch " << branchName << "\n";
+}
+
+void gitClass::gitCurrentBranch() {
+    string headRef = get_HEAD_ref_local();
+    if (headRef.empty()) {
+        cout << "No branch (HEAD not set)\n";
+        return;
+    }
+    size_t pos = headRef.find_last_of('/');
+    string name = (pos==string::npos) ? headRef : headRef.substr(pos+1);
+    cout << name << "\n";
+}
+
+void gitClass::gitMerge(std::string sourceBranch) {
+    namespace fs = std::filesystem;
+    std::string sourceRef = "refs/heads/" + sourceBranch;
+    fs::path sourcePath = fs::current_path() / ".git" / sourceRef;
+    if (!fs::exists(sourcePath)) {
+        std::cout << "Branch not found: " << sourceBranch << "\n";
+        return;
+    }
+
+    // Get source branch commit hash
+    std::string srcHash;
+    {
+        std::ifstream in(sourcePath.string());
+        getline(in, srcHash);
+    }
+
+    if (srcHash.empty()) {
+        std::cout << "Nothing to merge, " << sourceBranch << " is empty.\n";
+        return;
+    }
+
+    // Copy data from developer branch's head commit to staging
+    fs::path commitDir = fs::current_path() / ".git" / "commits";
+    bool found = false;
+    std::string shortHash = srcHash.substr(0,8);
+    for (auto &d : fs::directory_iterator(commitDir)) {
+        fs::path info = d.path() / "commitInfo.txt";
+        if (!fs::exists(info)) continue;
+        std::ifstream file(info.string());
+        std::string line; getline(file, line);
+        if (line.size() > 2) {
+            std::string full = line.substr(2);
+            if (full == srcHash) {
+                fs::path staging = fs::current_path() / ".git" / "staging_area";
+                if (fs::exists(staging)) fs::remove_all(staging);
+                fs::create_directories(staging);
+                fs::copy(d.path() / "Data", staging, fs::copy_options::recursive | fs::copy_options::overwrite_existing);
+                found = true;
+                break;
+            }
+        }
+    }
+
+    if (!found) {
+        std::cout << "Could not find commit data for " << sourceBranch << "\n";
+        return;
+    }
+
+    // Create merge commit on current branch
+    std::string msg = "Merge branch '" + sourceBranch + "'";
+    list.addOnTail(msg);
+    std::cout << "Merged branch '" << sourceBranch << "' into current branch.\n";
+}
+
 void gitClass::gitCherryPick(std::string commitHash) {
     namespace fs = std::filesystem;
 
@@ -142,3 +231,4 @@ void gitClass::gitCherryPick(std::string commitHash) {
 //     list.printCommitStatus();
 
 // }
+
