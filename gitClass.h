@@ -12,5 +12,11 @@ public:
     void gitCommit(std::string msg);
     void gitRevert(std::string hash);
     void gitLog();
+
+    //new features
+    void gitBranch(std::string branchName);
+    void gitCheckout(std::string branchName);
+    void gitCurrentBranch();
 };
+
 
