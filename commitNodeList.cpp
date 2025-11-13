@@ -194,6 +194,25 @@ void commitNodeList::revertCommit(string commitHash)
             return;
         }
     }
+    fs::path commitDir = fs::current_path() / ".git" / "commits";
+    string foundDirName;
+    for (auto &d : fs::directory_iterator(commitDir)) {
+        fs::path infoFile = d.path() / "commitInfo.txt";
+        if (!fs::exists(infoFile)) continue;
+        string line; ifstream f(infoFile.string());
+        getline(f, line);
+        if (line.size() > 2) {
+            string full = line.substr(2);
+            if (full == targetFullHash) {
+                foundDirName = d.path().filename().string();
+                break;
+            }
+        }
+    }
+    if (foundDirName.empty()) {
+        cout << "Could not resolve commit hash to folder\n";
+        return;
+    }
     // get original commit info
     auto infoFile = filesystem::current_path() / ".git" / "commits" / commitHash / "commitInfo.txt";
     if (!filesystem::exists(infoFile)) {
