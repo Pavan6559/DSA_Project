@@ -97,7 +97,48 @@ void gitClass::gitLog()
     list.printCommitList();
 }
 
-// void gitClass::gitStatus()
+void gitClass::gitCherryPick(std::string commitHash) {
+    namespace fs = std::filesystem;
+
+    fs::path commitPath = fs::current_path() / ".git" / "commits" / commitHash;
+    if (!fs::exists(commitPath)) {
+        std::cout << RED << "Commit not found: " << commitHash << END << std::endl;
+        return;
+    }
+
+    fs::path dataPath = commitPath / "Data";
+    if (!fs::exists(dataPath)) {
+        std::cout << RED << "No data folder for commit: " << commitHash << END << std::endl;
+        return;
+    }
+
+    // Step 1: Copy commit's data to staging area
+    fs::path staging = fs::current_path() / ".git" / "staging_area";
+    if (fs::exists(staging)) fs::remove_all(staging);
+    fs::create_directories(staging);
+    fs::copy(dataPath, staging, fs::copy_options::recursive | fs::copy_options::overwrite_existing);
+
+    // Step 2: Read commit message
+    std::string msg = "Cherry-picked commit " + commitHash.substr(0, 8);
+    fs::path infoPath = commitPath / "commitInfo.txt";
+    if (fs::exists(infoPath)) {
+        std::ifstream file(infoPath.string());
+        std::string line;
+        while (getline(file, line)) {
+            if (line[0] == '2') {
+                msg = line.substr(2) + " (cherry-picked)";
+                break;
+            }
+        }
+    }
+
+    // Step 3: Make a new commit on the current branch
+    list.addOnTail(msg);
+
+    std::cout << GRN << "Cherry-picked commit " << commitHash.substr(0, 8)
+              << " into current branch." << END << std::endl;
+}
 // {
 //     list.printCommitStatus();
+
 // }
