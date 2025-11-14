@@ -4,15 +4,14 @@
 #include <filesystem>
 #include <ctime>
 #include <string>
+#include <vector>
+#include <algorithm>
+#include <sstream>
+#include <iomanip>
+
+namespace fs = std::filesystem;
 
 using namespace std;
-
-#ifdef _WIN32
-    #include <process.h>
-    #define getpid _getpid
-#else
-    #include <unistd.h>
-#endif
 
 //  GLOBAL HELPER FUNCTIONS (used for commit ID + timestamp)
 
