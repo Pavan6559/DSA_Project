@@ -16,34 +16,109 @@ using namespace std;
 
 //  GLOBAL HELPER FUNCTIONS (used for commit ID + timestamp)
 
-string gen_random(const int len)
-{
-    srand((unsigned)time(NULL) * getpid());
-    static const char alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
+class SHA1 {
+public:
+    SHA1() { reset(); }
+    void reset() {
+        length_low = length_high = 0;
+        message_block_index = 0;
+        computed = false;
+        corrupted = false;
+        H[0] = 0x67452301;
+        H[1] = 0xEFCDAB89;
+        H[2] = 0x98BADCFE;
+        H[3] = 0x10325476;
+        H[4] = 0xC3D2E1F0;
+    }
+    void input(const unsigned char* message_array, unsigned length) {
+        if (!length) return;
+        if (computed || corrupted) { corrupted = true; return; }
+        while (length-- && !corrupted) {
+            message_block[message_block_index++] = (*message_array & 0xFF);
+            length_low += 8;
+            if (length_low == 0) {
+                length_high++;
+                if (length_high == 0)
+                    corrupted = true;
+            }
+            if (message_block_index == 64)
+                processMessageBlock();
+            ++message_array;
+        }
+    }
+    void input(const std::string &s) { input((const unsigned char*)s.c_str(), (unsigned)s.size()); }
+    std::string final() {
+        if (corrupted) return "";
+        if (!computed) {
+            padMessage();
+            // message may be padded with multiple blocks
+            for (int i = 0; i < 5; ++i) {
+                // produce hex string
+                std::ostringstream os;
+                os << std::hex << std::setfill('0') << std::setw(8) << (H[i] & 0xFFFFFFFF);
+                result += os.str();
+            }
+            computed = true;
+        }
+        return result;
+    }
+private:
+    void processMessageBlock() {
+        const unsigned K[] = { 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6 };
+        unsigned W[80];
+        for (int t = 0; t < 16; ++t)
+            W[t] = ((unsigned)message_block[t * 4]) << 24 |
+                   ((unsigned)message_block[t * 4 + 1]) << 16 |
+                   ((unsigned)message_block[t * 4 + 2]) << 8 |
+                   ((unsigned)message_block[t * 4 + 3]);
+        for (int t = 16; t < 80; ++t)
+            W[t] = leftrotate(W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16], 1);
 
-    string tmp;
-    tmp.reserve(len);
+        unsigned A = H[0], B = H[1], C = H[2], D = H[3], E = H[4];
+        for (int t = 0; t < 80; ++t) {
+            unsigned temp = leftrotate(A, 5) + f(t, B, C, D) + E + K[t / 20] + W[t];
+            E = D; D = C; C = leftrotate(B, 30); B = A; A = temp;
+        }
+        H[0] += A; H[1] += B; H[2] += C; H[3] += D; H[4] += E;
+        message_block_index = 0;
+    }
+    unsigned f(int t, unsigned B, unsigned C, unsigned D) {
+        if (t < 20) return (B & C) | ((~B) & D);
+        if (t < 40) return B ^ C ^ D;
+        if (t < 60) return (B & C) | (B & D) | (C & D);
+        return B ^ C ^ D;
+    }
+    unsigned leftrotate(unsigned x, unsigned n) { return (x << n) | (x >> (32 - n)); }
+    void padMessage() {
+        // backup current block_index
+        message_block[message_block_index++] = 0x80;
+        if (message_block_index > 56) {
+            while (message_block_index < 64)
+                message_block[message_block_index++] = 0;
+            processMessageBlock();
+        }
+        while (message_block_index < 56)
+            message_block[message_block_index++] = 0;
+        // append length
+        message_block[56] = (unsigned char)((length_high >> 24) & 0xFF);
+        message_block[57] = (unsigned char)((length_high >> 16) & 0xFF);
+        message_block[58] = (unsigned char)((length_high >> 8) & 0xFF);
+        message_block[59] = (unsigned char)(length_high & 0xFF);
+        message_block[60] = (unsigned char)((length_low >> 24) & 0xFF);
+        message_block[61] = (unsigned char)((length_low >> 16) & 0xFF);
+        message_block[62] = (unsigned char)((length_low >> 8) & 0xFF);
+        message_block[63] = (unsigned char)(length_low & 0xFF);
+        processMessageBlock();
+    }
 
-    for (int i = 0; i < len; ++i)
-        tmp += alphanum[rand() % (sizeof(alphanum) - 1)];
-
-    return tmp;
-}
-
-string get_time()
-{
-    time_t t = std::time(0);
-    tm* now = std::localtime(&t);
-
-    return to_string(now->tm_year + 1900) + "/" +
-           to_string(now->tm_mon + 1) + "/" +
-           to_string(now->tm_mday) + " " +
-           to_string(now->tm_hour) + ":" +
-           to_string(now->tm_min) + "\n";
-}
+    unsigned H[5];
+    unsigned long long length_low, length_high;
+    unsigned char message_block[64];
+    int message_block_index = 0;
+    bool computed = false;
+    bool corrupted = false;
+    std::string result;
+};
 
 
 //  INTERNAL CLASS (PRIVATE TO THIS .CPP FILE)
