@@ -14,8 +14,9 @@ using namespace std;
 #define END  "\033[0m"
 //---------------------
 
-int main(){
-  gitClass gitClassObj;
+int main(int argc, char *argv[])
+{
+    gitClass gitClassObj;
     if(argc >= 2)
     {
         string argument = string(argv[1]);
@@ -23,29 +24,24 @@ int main(){
         if (argument == "init")
         {
             gitClassObj.gitInit();
-            cout <<GRN "git repository initialized successfully!" END<< endl;
-            
         }
         //git add
-        else if (argument == "add")                                               
+        else if (argument == "add")
         {
-            if(argc == 2){     
+            if(argc == 2){
                 cout << RED "missing arguments!" <<endl;
                 cout << "Provide a third argument e.g." << endl;
                 cout << "git add <'.' | 'file_name'>" END << endl;
             }
             if(argc >= 3){
-                if(argc == 3){
-                    string argumentC = string(argv[2]);
-                    if (argumentC == ".") {
-                        gitClassObj.gitAdd();
-                    }
-                    else
-                    {
-                        string files[1] = {string(argv[2])};
-                        gitClassObj.gitAdd(files, 1);
-                    }
-
+                string argumentC = string(argv[2]);
+                if (argumentC == ".") {
+                    gitClassObj.gitAdd();
+                }
+                else if (argc == 3)
+                {
+                    string files[1] = {string(argv[2])};
+                    gitClassObj.gitAdd(files, 1);
                 } else {
                     vector<string> files;
                     for (int i = 2; i < argc; i++)
@@ -55,22 +51,22 @@ int main(){
                     gitClassObj.gitAdd(files.data(), files.size());
                 }
             }
-            
+
         }
         //git commit
         else if (argument == "commit")
         {
             if(argc == 4)    //[ git, commit, -m, "msg" ]
             {
-                string argumentC = string(argv[2]);    
-                string argumentD = string(argv[3]);      
+                string argumentC = string(argv[2]);
+                string argumentD = string(argv[3]);
                 if(argumentC == "-m")
                 {
                     gitClassObj.gitCommit(argumentD);
-                    cout << "files commited successfully" << endl;
+                    cout << "files committed successfully" << endl;
                 }
             }
-            else 
+            else
             {
                 cout << RED "missing arguments!" <<endl;
                 cout << "Provide with a message field e.g." << endl;
@@ -83,33 +79,57 @@ int main(){
             if(argc == 3)
             {
                 string argumentC = string(argv[2]);
-                if(argumentC == "HEAD")
-                {
-                    gitClassObj.gitRevert(argumentC);
-                    cout << "The project is now at HEAD" << endl;
-                }
-                else
-                {
-                    gitClassObj.gitRevert(argumentC);
-                    cout << "Reverted to <commit_id> commit" << endl;
-                }
+                gitClassObj.gitRevert(argumentC);
             }
-            else 
+            else
             {
                 cout << RED "invalid arguments, should be like: " << endl;
                 cout << "git revert <'HEAD'|'commit_hash'>" END<< endl;
             }
         }
-        // //git log
+        // git merge
+        else if (argument == "merge")
+        {
+            if(argc == 3)
+                gitClassObj.gitMerge(string(argv[2]));
+            else
+                cout << RED "invalid arguments: git merge <branch>" END << endl;
+        }
+        // git log
         else if(argument == "log")
         {
             gitClassObj.gitLog();
         }
-        //git status
-        // else if(argument == "status")
-        // {
-        //     gitClassObj.gitStatus();
-        // }
+        // git branch
+        else if(argument == "branch")
+        {
+            if(argc == 3) {
+                gitClassObj.gitBranch(string(argv[2]));
+            } else {
+                cout << RED "invalid arguments: git branch <name>" END << endl;
+            }
+        }
+        // git checkout
+        else if(argument == "checkout")
+        {
+            if(argc == 3) {
+                gitClassObj.gitCheckout(string(argv[2]));
+            } else {
+                cout << RED "invalid arguments: git checkout <name>" END << endl;
+            }
+        }
+        //cherry-pick
+        else if (argument == "cherry-pick") {
+            if (argc == 3)
+                gitClassObj.gitCherryPick(string(argv[2]));
+            else
+                cout << RED "invalid arguments: git cherry-pick <commit_hash>" END << endl;
+        }
+        // git current
+        else if(argument == "current")
+        {
+            gitClassObj.gitCurrentBranch();
+        }
         //wrong arguments
         else
         {
@@ -117,7 +137,7 @@ int main(){
         }
 
     }
-    else 
+    else
     {
         cout << YEL "nodeVC - simplified local version control\n\n";
         cout << "Usage: " << endl;
