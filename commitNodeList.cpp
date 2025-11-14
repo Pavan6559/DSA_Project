@@ -295,13 +295,18 @@ commitNodeList::commitNodeList()
 
 void commitNodeList::addOnTail(string msg)
 {
-    // parent = current branch head
+    namespace fs = std::filesystem;
+
+    // 1. Parent commit (current branch HEAD)
     string parent = get_current_branch_head_hash();
+    parent.erase(remove(parent.begin(), parent.end(), '\n'), parent.end());
     string timestamp = get_time_str();
-    string fullHash = compute_commit_hash(parent, msg, timestamp); // 40-char hex
+
+    // 2. Compute full 40-char commit hash
+    string fullHash = compute_commit_hash(parent, msg, timestamp);
     string shortHash = fullHash.substr(0, 8);
 
-    // create commit dir named with shortHash (for readability), but store full hash in commitInfo
+    // 3. Create commit directory (named by shortHash)
     fs::path commitPath = fs::current_path() / ".git" / "commits" / shortHash;
     fs::create_directories(commitPath);
 
