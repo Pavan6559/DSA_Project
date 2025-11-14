@@ -48,6 +48,12 @@ void gitClass::gitInit()
     filesystem::create_directory(".git");
     filesystem::create_directory(".git/staging_area");
     filesystem::create_directory(".git/commits");
+    // create refs/heads/main and HEAD pointing to it (empty initially)
+    fs::create_directories(".git/refs/heads");
+    fs::path mainRef = fs::current_path() / ".git" / "refs" / "heads" / "main";
+    // leave it empty until first commit
+    write_HEAD_ref("refs/heads/main");
+    cout << "Initialized empty nodeVC repository with branch 'main'.\n";
 }
 
 void gitClass::gitAdd()
@@ -254,5 +260,6 @@ void gitClass::gitCherryPick(std::string commitHash) {
 //     list.printCommitStatus();
 
 // }
+
 
 
