@@ -16,6 +16,30 @@ This project provides a clean, educational deep-dive into how real VCS tools lik
 
 ---
 
+🔹 Highlights of the Project
+
+Some key highlights are:
+
+Full custom SHA-1 implementation
+
+Deterministic commit hashing
+
+Snapshot-based versioning (stores full project per commit)
+
+Parent-pointer commit chain like Git
+
+Branch creation, checkout, and isolation
+
+Fast-forward merging
+
+Cherry-picking of commits
+
+Revert system that creates a new commit
+
+Complete .git directory recreation in C++
+
+---
+
 ## 🔹Data Structures & Algorithms Used
 
 | Feature        | DS/Algo Used                      | Why?                                        |
