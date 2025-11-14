@@ -17,6 +17,11 @@ public:
     void gitBranch(std::string branchName);
     void gitCheckout(std::string branchName);
     void gitCurrentBranch();
+
+    //new features
+    void gitMerge(std::string sourceBranch);
+    void gitCherryPick(std::string commitHash); 
 };
+
 
 
