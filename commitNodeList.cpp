@@ -445,36 +445,36 @@ void commitNodeList::printCommitList()
 {
     cout << "\n===== COMMIT LOG =====\n";
 
-    auto commitDir = filesystem::current_path() / ".git" / "commits";
-
-    if (!filesystem::exists(commitDir))
-    {
-        cout << "No commits yet.\n";
+    // 1. Get current branch HEAD (full hash)
+    string current = get_current_branch_head_hash();
+    if (current.empty()) {
+        cout << "Branch has no commits.\n";
         return;
     }
 
-    for (const auto& dir : filesystem::directory_iterator(commitDir))
-    {
-        auto infoFile = dir.path() / "commitInfo.txt";
-        if (!filesystem::exists(infoFile)) continue;
+    while (!current.empty()) {
+        // short hash = folder name
+        string shortHash = current.substr(0, 8);
+        fs::path commitInfo = fs::current_path() / ".git" / "commits" / shortHash / "commitInfo.txt";
 
-        ifstream file(infoFile.string());
-        string info;
+        if (!fs::exists(commitInfo))
+            break;
 
-        while (getline(file, info))
-        {
-            if (info[0] == '1')
-                cout << "Commit ID:   " << info.substr(2) << endl;
-            if (info[0] == '2')
-                cout << "Message:     " << info.substr(2) << endl;
-            if (info[0] == '3')
-                cout << "Date & Time: " << info.substr(2) << endl;
+        string fullHash, msg, timestamp, parent;
+        ifstream f(commitInfo.string());
+        string line;
+        while (getline(f, line)) {
+            if (line.rfind("1.",0) == 0) fullHash = line.substr(2);
+            if (line.rfind("2.",0) == 0) msg       = line.substr(2);
+            if (line.rfind("3.",0) == 0) timestamp = line.substr(2);
+            if (line.rfind("4.",0) == 0) parent    = line.substr(2);
         }
 
-        cout << "--------------------------\n";
         cout << "Commit:    " << shortHash << endl;
         cout << "Message:   " << msg << endl;
         cout << "Timestamp: " << timestamp << endl;
         cout << "-----------------------------\n";
+
+        current = parent;  // move to previous commit
     }
 }
