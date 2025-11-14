@@ -119,12 +119,15 @@ int main(){
     }
     else 
     {
-        cout << YEL "git is version control system made by linus Torvalds, this project is a clone of that original system with minimal features \n\n";
-
+        cout << YEL "nodeVC - simplified local version control\n\n";
         cout << "Usage: " << endl;
-        cout << "git init                           ->   initialize an empty git repository in the current dir" << endl;
-        cout << "git add <'.'|'file_name'>          ->   add the files to staging area" << endl;
-        cout << "git commit <m 'commit message'>    ->   commit your staging files" << endl;
-        cout << "git revert <'HEAD'|'commit_hash'>  ->   rollback to a specific commit" END << endl;
+        cout << "nodeVC init                           ->   initialize repository" << endl;
+        cout << "nodeVC add <'.'|'file_name'>          ->   add files to staging area" << endl;
+        cout << "nodeVC commit -m 'message'            ->   commit your staging files" << endl;
+        cout << "nodeVC revert <'HEAD'|'commit_hash'>  ->   revert to a specific commit" << endl;
+        cout << "nodeVC log                            ->   show commit history" << endl;
+        cout << "nodeVC branch <name>                  ->   create branch" << endl;
+        cout << "nodeVC checkout <name>                ->   switch to branch" << endl;
+        cout << "nodeVC current                        ->   show current branch" END << endl;
     }
 }
