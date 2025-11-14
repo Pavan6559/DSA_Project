@@ -8,6 +8,15 @@ It recreates Git’s essential concepts — staging, commits, branching, checkou
 This project provides a clean, educational deep-dive into how real VCS tools like Git function internally.
 
 ---
+🔹 Why did we choose this project?
+
+We chose this project because:
+
+->Git is used by every developer, yet understanding how Git works internally is difficult.
+->This project allowed us to combine Data Structures, Algorithms, and File System handling in one place.
+->It is a systems-level project — the kind that companies actually value (OS, compiler, VCS, DB internals).
+
+---
 
 ## 🔹Data Structures & Algorithms Used
 
