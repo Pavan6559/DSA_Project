@@ -12,8 +12,6 @@ This project provides a clean, educational deep-dive into how real VCS tools lik
 
 ->Git is used by every developer, yet understanding how Git works internally is difficult.
 
-->This project allowed us to combine Data Structures, Algorithms, and File System handling in one place.
-
 ->It is a systems-level project — the kind that companies actually value (OS, compiler, VCS, DB internals).
 
 ---
