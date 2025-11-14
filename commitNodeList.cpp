@@ -119,76 +119,7 @@ private:
     std::string result;
 };
 
-
-//  INTERNAL CLASS (PRIVATE TO THIS .CPP FILE)
-class commitNode
-{
-private:
-    string commitID;
-    string commitMsg;
-    string nextCommitID;
-
-    void createCommitNode()
-    {
-        filesystem::create_directories(filesystem::current_path() / ".git" / "commits" / commitID);
-        auto infoPath = filesystem::current_path() / ".git" / "commits" / commitID / "commitInfo.txt";
-
-        ofstream write(infoPath.string());
-        write << "1." + commitID << "\n"
-              << "2." + commitMsg << "\n"
-              << "3." + get_time();
-
-        auto staging = filesystem::current_path() / ".git" / "staging_area";
-        filesystem::copy(staging,
-                         filesystem::current_path() / ".git" / "commits" / commitID / "Data",
-                         filesystem::copy_options::update_existing | filesystem::copy_options::recursive);
-    }
-
-public:
-    commitNode() {}
-
-    commitNode(string id, string msg)
-        : commitID(id), commitMsg(msg)
-    {
-        createCommitNode();
-    }
-
-    string getCommitID() { return commitID; }
-    string getCommitMsg() { return commitMsg; }
-
-    void writeNextCommitID(string id)
-    {
-        nextCommitID = id;
-        auto path = filesystem::current_path() / ".git" / "commits" / commitID / "nextCommitInfo.txt";
-        ofstream write(path.string());
-        write << id;
-    }
-
-    string checkNextCommitId()
-    {
-        auto path = filesystem::current_path() / ".git" / "commits" / commitID / "nextCommitInfo.txt";
-        if (!filesystem::exists(path)) return "";
-
-        ifstream file(path.string());
-        getline(file, nextCommitID);
-        return nextCommitID;
-    }
-
-    void revertCommitNode(string fromHash)
-    {
-        filesystem::create_directories(
-            filesystem::current_path() / ".git" / "commits" / commitID / "Data"
-        );
-
-        filesystem::copy(
-            filesystem::current_path() / ".git" / "commits" / fromHash / "Data",
-            filesystem::current_path() / ".git" / "commits" / commitID / "Data",
-            filesystem::copy_options::recursive |
-            filesystem::copy_options::overwrite_existing   // <-- THIS FIXES IT
-        );
-    }
-};
-
+// helpers for commit hashing and staging 
 static string read_file_text(const fs::path &p) {
     std::ifstream in(p, std::ios::binary);
     if (!in) return string();
