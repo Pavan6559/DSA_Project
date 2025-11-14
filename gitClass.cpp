@@ -8,17 +8,40 @@
 
 using namespace std;
 
-//---------------------
-#define RED "\x1B[31m"
-#define GRN "\x1B[32m"
-#define YEL "\x1B[33m"
-#define BLU "\x1B[34m"
-#define MAG "\x1B[35m"
-#define CYN "\x1B[36m"
-#define WHT "\x1B[37m"
-#define END "\033[0m"
-//---------------------
+//colours
+#define RED  "\x1B[31m"
+#define GRN  "\x1B[32m"
+#define END  "\033[0m"
 
+namespace fs = std::filesystem;
+
+static void write_HEAD_ref(const string &branchRef) {
+    fs::path head = fs::current_path() / ".git" / "HEAD";
+    fs::create_directories(head.parent_path());
+    ofstream f(head.string());
+    f << "ref: " << branchRef;
+}
+
+static string get_HEAD_ref_local() {
+    fs::path head = fs::current_path() / ".git" / "HEAD";
+    if (!fs::exists(head)) return string();
+    string line; ifstream f(head.string()); getline(f, line);
+    if (line.rfind("ref:", 0) == 0) return line.substr(5);
+    return string();
+}
+
+static string get_ref_value_local(const string &ref) {
+    fs::path refPath = fs::current_path() / ".git" / ref;
+    if (!fs::exists(refPath)) return string();
+    string v; ifstream f(refPath.string()); getline(f, v); return v;
+}
+
+static void set_ref_value_local(const string &ref, const string &value) {
+    fs::path refPath = fs::current_path() / ".git" / ref;
+    fs::create_directories(refPath.parent_path());
+    ofstream f(refPath.string());
+    f << value;
+}
 
 void gitClass::gitInit()
 {
@@ -231,4 +254,5 @@ void gitClass::gitCherryPick(std::string commitHash) {
 //     list.printCommitStatus();
 
 // }
+
 
