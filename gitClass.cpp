@@ -60,53 +60,38 @@ void gitClass::gitAdd()
 {
     const auto copyOptions = filesystem::copy_options::update_existing | filesystem::copy_options::recursive;
 
-    for (const auto &dirEntry : filesystem::directory_iterator(filesystem::current_path()))
-    {
-        auto fileName = filesystem::path(dirEntry).filename();
-        if (fileName != "git" && fileName != ".git")
-        {
-            if (filesystem::is_directory(fileName))
+    for (const auto &dirEntry : fs::directory_iterator(fs::current_path())){
+            auto fileName = fs::path(dirEntry).filename();
+            // skip .git folder
+            if (fileName == ".git") continue;
+    
+            if (fs::is_directory(dirEntry))
             {
-                filesystem::copy(dirEntry, filesystem::current_path() / ".git" / "staging_area" / fileName, copyOptions);
+                fs::copy(dirEntry, fs::current_path() / ".git" / "staging_area" / fileName, copyOptions);
             }
             else
             {
-                filesystem::copy(dirEntry, filesystem::current_path() / ".git" / "staging_area" / "", copyOptions);
+                fs::copy(dirEntry, fs::current_path() / ".git" / "staging_area" / fileName, copyOptions);
             }
         }
-    }
 }
 
 void gitClass::gitAdd(string files[], int arrSize)
 {
-    const auto copyOptions = filesystem::copy_options::update_existing | filesystem::copy_options::recursive;
+    const auto copyOptions = fs::copy_options::update_existing | fs::copy_options::recursive;
 
     for (int i = 0; i < arrSize; i++)
     {
-        if (filesystem::exists(files[i]))
+        if (fs::exists(files[i]))
         {
-            int last_index = files[i].find_last_of('/');
-            if (last_index != string::npos)
-            {
-                auto newDir = filesystem::current_path() / ".git" / "staging_area" / files[i].substr(0, last_index);
-                filesystem::create_directories(newDir);
-                filesystem::copy(filesystem::current_path() / files[i], filesystem::current_path() / ".git" / "staging_area" / files[i], copyOptions);
-            }
-            else
-            {
-                if (filesystem::is_directory(files[i]))
-                {
-                    filesystem::copy(filesystem::current_path() / files[i], filesystem::current_path() / ".git" / "staging_area" / files[i], copyOptions);
-                }
-                else
-                {
-                    filesystem::copy(filesystem::current_path() / files[i], filesystem::current_path() / ".git" / "staging_area", copyOptions);
-                }
-            }
+            fs::path src = fs::current_path() / files[i];
+            fs::path dest = fs::current_path() / ".git" / "staging_area" / files[i];
+            fs::create_directories(dest.parent_path());
+            fs::copy(src, dest, copyOptions);
         }
         else
         {
-            cout << files[i] << RED "does not exist!" END << endl;
+            cout << files[i] << " does not exist!" << endl;
         }
     }
 }
@@ -140,14 +125,14 @@ void gitClass::gitBranch(string branchName) {
 }
 
 void gitClass::gitCheckout(string branchName) {
-    string ref = string("refs/heads/") + branchName;
-    fs::path refPath = fs::current_path() / ".git" / ref;
-    if (!fs::exists(refPath)) {
-        cout << "Branch does not exist: " << branchName << "\n";
+    fs::path branchRef = fs::current_path() / ".git" / "refs" / "heads" / branchName;
+    if (!fs::exists(branchRef)) {
+        cout << "Branch does not exist.\n";
         return;
     }
-    write_HEAD_ref(ref);
-    cout << "Switched to branch " << branchName << "\n";
+    ofstream head(fs::current_path() / ".git" / "HEAD");
+    head << "ref: refs/heads/" << branchName;
+    cout << "Switched to branch '" << branchName << "'\n";
 }
 
 void gitClass::gitCurrentBranch() {
@@ -260,6 +245,7 @@ void gitClass::gitCherryPick(std::string commitHash) {
 //     list.printCommitStatus();
 
 // }
+
 
 
 
