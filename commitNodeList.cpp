@@ -190,6 +190,103 @@ public:
     }
 };
 
+static string read_file_text(const fs::path &p) {
+    std::ifstream in(p, std::ios::binary);
+    if (!in) return string();
+    std::ostringstream ss;
+    ss << in.rdbuf();
+    return ss.str();
+}
+
+// Walk staging directory, collect file paths sorted to ensure deterministic hash
+static void collect_staging_files(const fs::path &staging, vector<fs::path> &out) {
+    if (!fs::exists(staging)) return;
+    for (auto &entry : fs::recursive_directory_iterator(staging)) {
+        if (fs::is_regular_file(entry.path())) {
+            out.push_back(entry.path());
+        }
+    }
+    sort(out.begin(), out.end());
+}
+
+static string compute_sha1_of_string(const string &s) {
+    SHA1 sha;
+    sha.input((const unsigned char*)s.data(), (unsigned)s.size());
+    return sha.final();
+}
+
+// Compute commit hash based on parentRef + message + timestamp + file contents (deterministic)
+static string compute_commit_hash(const string &parentHash, const string &message, const string &timestamp) {
+    fs::path staging = fs::current_path() / ".git" / "staging_area";
+    vector<fs::path> files;
+    collect_staging_files(staging, files);
+    SHA1 sha;
+    // include parent, message, timestamp
+    sha.input((const unsigned char*)parentHash.data(), (unsigned)parentHash.size());
+    sha.input((const unsigned char*)message.data(), (unsigned)message.size());
+    sha.input((const unsigned char*)timestamp.data(), (unsigned)timestamp.size());
+    // include file paths + content in sorted order
+    for (auto &p : files) {
+        string relative = fs::relative(p, staging).generic_string();
+        sha.input((const unsigned char*)relative.data(), (unsigned)relative.size());
+        string content = read_file_text(p);
+        sha.input((const unsigned char*)content.data(), (unsigned)content.size());
+    }
+    return sha.final(); // full 40-char hex
+}
+
+// get current branch ref from HEAD (returns branch name and ref path)
+static string get_HEAD_ref() {
+    fs::path headPath = fs::current_path() / ".git" / "HEAD";
+    if (!fs::exists(headPath)) return string();
+    string line;
+    ifstream f(headPath.string());
+    getline(f, line);
+    // expected format: "ref: refs/heads/main"
+    if (line.rfind("ref:", 0) == 0) {
+        auto ref = line.substr(5);
+        return ref;
+    }
+    return string();
+}
+
+static string get_current_branch_name() {
+    string ref = get_HEAD_ref();
+    if (ref.empty()) return string();
+    // ref is like "refs/heads/main"
+    size_t pos = ref.find_last_of('/');
+    if (pos == string::npos) return ref;
+    return ref.substr(pos + 1);
+}
+
+static string get_ref_value(const string &ref) {
+    fs::path refPath = fs::current_path() / ".git" / ref;
+    if (!fs::exists(refPath)) return string();
+    string v; ifstream f(refPath.string()); getline(f, v); return v;
+}
+
+static void set_ref_value(const string &ref, const string &value) {
+    fs::path refPath = fs::current_path() / ".git" / ref;
+    fs::create_directories(refPath.parent_path());
+    ofstream f(refPath.string());
+    f << value;
+}
+
+// get parent commit hash from current branch ref
+static string get_current_branch_head_hash() {
+    string ref = get_HEAD_ref();
+    if (ref.empty()) return string();
+    return get_ref_value(ref);
+}
+
+static string get_time_str() {
+    time_t t = time(nullptr);
+    tm *now = localtime(&t);
+    ostringstream os;
+    os << (now->tm_year + 1900) << "/" << (now->tm_mon + 1) << "/" << now->tm_mday << " " << now->tm_hour << ":" << now->tm_min;
+    return os.str();
+}
+
 //  commitNodeList CLASS IMPLEMENTATION (matches .h file)
 
 commitNodeList::commitNodeList()
