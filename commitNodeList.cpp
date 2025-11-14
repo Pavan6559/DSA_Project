@@ -384,13 +384,7 @@ void commitNodeList::revertCommit(string commitHash)
         cout << "Could not resolve commit hash to folder\n";
         return;
     }
-    // get original commit info
-    auto infoFile = filesystem::current_path() / ".git" / "commits" / commitHash / "commitInfo.txt";
-    if (!filesystem::exists(infoFile)) {
-        cout << "Invalid commit hash!\n";
-        return;
-    }
-
+    // read message from original commit
     string msg;
     {
         ifstream fin(fs::current_path() / ".git" / "commits" / foundDirName / "commitInfo.txt");
@@ -399,21 +393,15 @@ void commitNodeList::revertCommit(string commitHash)
             if (ln.size() > 0 && ln[0] == '2') { msg = ln.substr(2); break; }
         }
     }
-    string line;
-    ifstream file(infoFile.string());
-    while (getline(file, line))
-        if (line[0] == '2')   // commit message line
-            msg = line.substr(2);
 
-    commitNode node(gen_random(8), msg);  // <-- use original commit message
-    node.revertCommitNode(commitHash);
-     string parent = get_current_branch_head_hash();
+    // create a new commit that restores the target commit
+    string parent = get_current_branch_head_hash();
     string timestamp = get_time_str();
     // compute new commit hash using targetFullHash content to ensure determinism
-    // We'll include special marker "revert:"+targetFullHash in the message so it's recorded
+    // We'll include special marker "revert:"+targetFullHash in message so it's recorded
     string combinedMsg = string("revert:") + targetFullHash + "|" + msg;
-    // For revert, we need to compute a hash based on the files we're copying (the target Data)
-    // To keep deterministic, we temporarily copy the target Data into the staging area and compute
+    // For revert, we need to compute hash based on the files we're copying (the target Data)
+    // To keep deterministic, we temporarily copy target Data into staging area and compute
     fs::path staging = fs::current_path() / ".git" / "staging_area";
     // clear staging
     if (fs::exists(staging)) fs::remove_all(staging);
