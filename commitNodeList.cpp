@@ -306,11 +306,13 @@ void commitNodeList::addOnTail(string msg)
     fs::create_directories(commitPath);
 
     // write commitInfo.txt (store full hash in line 1 to be unambiguous)
-    ofstream info(commitPath / "commitInfo.txt");
-    info << "1." << fullHash << "\n";
-    info << "2." << msg << "\n";
-    info << "3." << timestamp << "\n";
-    info.close();
+    {
+        ofstream info(commitPath / "commitInfo.txt");
+        info << "1." << fullHash << "\n";
+        info << "2." << msg << "\n";
+        info << "3." << timestamp << "\n";
+        info << "4." << parent << "\n";  
+    }
 
     // copy staging_area -> commit/Data (overwrite if exists)
     fs::path staging = fs::current_path() / ".git" / "staging_area";
