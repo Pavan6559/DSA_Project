@@ -1,8 +1,8 @@
 
 # VersionVault  
-               -   SAI SIDDHARDHA KADUMULA (B24EE1029)
-                   PAVAN PRAKASH LELLA (B24EE1040)
-                   ASHISH RATHNAM DASARI (B24CS1024)
+               -   SAI SIDDHARDHA KADUMULA   (B24EE1029)
+                   PAVAN PRAKASH LELLA       (B24EE1040)
+                   ASHISH RATHNAM DASARI     (B24CS1024)
                    NUTHAN KUMAR DONTHAMSETTY (B24EE1017)
 
 ### A Lightweight Git-Like Version Control System in C++
