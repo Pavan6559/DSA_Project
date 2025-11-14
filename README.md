@@ -1,5 +1,4 @@
-# Project Name 
-### VersionVault
+
 # VersionVault  
 ### A Lightweight Git-Like Version Control System in C++
 
@@ -10,7 +9,7 @@ This project provides a clean, educational deep-dive into how real VCS tools lik
 
 ---
 
-## 📘 Project Description
+##  Project Description
 
 VersionVault uses a snapshot-based storage model where every commit stores a full copy of the project files inside:
 
