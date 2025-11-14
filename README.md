@@ -9,7 +9,19 @@ This project provides a clean, educational deep-dive into how real VCS tools lik
 
 ---
 
-##  Project Description
+## 🔹Data Structures & Algorithms Used
+
+| Feature        | DS/Algo Used                      | Why?                                        |
+| -------------- | --------------------------------- | ------------------------------------------- |
+| Commit history | **Reverse Linked List**           | Easy backward traversal from HEAD to parent |
+| Staging area   | **Directory tree + recursion**    | To gather all files deterministically       |
+| Commit hashing | **Custom SHA-1 Algorithm**        | Deterministic, content-based identity       |
+| Branching      | **Pointer references**            | HEAD → refs/heads/<branch>                  |
+| Merging        | **Fast-forward pointer movement** | Efficient, simple merges                    |
+| File snapshot  | **Recursive file copy**           | Mimics Git’s snapshot model                 |
+
+---
+##  🔹Project Description
 
 VersionVault uses a snapshot-based storage model where every commit stores a full copy of the project files inside:
 
@@ -39,7 +51,7 @@ This makes **VersionVault** a strong systems + DSA project involving file handli
 
 ---
 
-## Branching Diagram
+## 🔹Branching Diagram
 
 
 <img width="230" height="110" alt="image" src="https://github.com/user-attachments/assets/5d14a98d-f148-42aa-bb1b-8d5e9fbbd370" />
@@ -95,7 +107,7 @@ commitInfo.txt
 
 ---
 
-##  Internal Mechanisms
+##  🔹Internal Mechanisms
 
 | Mechanism                    | Explanation |
 |-----------------------------|-------------|
@@ -109,7 +121,7 @@ commitInfo.txt
 
 ---
 
-##  Quick Start
+##  🔹Quick Start
 
 ./nodeVC init
 
